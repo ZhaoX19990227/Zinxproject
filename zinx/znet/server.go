@@ -22,7 +22,7 @@ type Server struct {
 // 定义当前客户端连接的所绑定的hanler api，目前写死 应由客户自定义handler
 func CallbackToClient(conn *net.TCPConn, data []byte, cnt int) error {
 	// 回显功能
-	fmt.Println("[Conn Handler] CallBackToClient....")
+	fmt.Printf("[Conn Handler] CallBackToClient....buf %s,count %d\n", data, cnt)
 	if _, err := conn.Write(data[:cnt]); err != nil {
 		fmt.Println("write back buf err", err)
 		return errors.New("CallBack err")
