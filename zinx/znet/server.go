@@ -2,7 +2,6 @@ package znet
 
 import (
 	"Zinxproject/zinx/ziface"
-	"errors"
 	"fmt"
 	"net"
 )
@@ -16,19 +15,20 @@ type Server struct {
 	// 服务器ip
 	IP string
 	// 服务器端口
-	Port int
+	Port   int
+	Router ziface.IRouter
 }
 
 // 定义当前客户端连接的所绑定的hanler api，目前写死 应由客户自定义handler
-func CallbackToClient(conn *net.TCPConn, data []byte, cnt int) error {
-	// 回显功能
-	fmt.Printf("[Conn Handler] CallBackToClient....buf %s,count %d\n", data, cnt)
-	if _, err := conn.Write(data[:cnt]); err != nil {
-		fmt.Println("write back buf err", err)
-		return errors.New("CallBack err")
-	}
-	return nil
-}
+//func CallbackToClient(conn *net.TCPConn, data []byte, cnt int) error {
+//	// 回显功能
+//	fmt.Printf("[Conn Handler] CallBackToClient....buf %s,count %d\n", data, cnt)
+//	if _, err := conn.Write(data[:cnt]); err != nil {
+//		fmt.Println("write back buf err", err)
+//		return errors.New("CallBack err")
+//	}
+//	return nil
+//}
 
 func (s *Server) Start() {
 	fmt.Printf("[Start] Server Listener at IP :%s,Port %d,is starting\n", s.IP, s.Port)
@@ -76,7 +76,8 @@ func (s *Server) Start() {
 			//}()
 
 			// 将处理新连接的业务方法和conn进行绑定，得到连接模块
-			dealConn := NewConnection(conn, cid, CallbackToClient)
+			//dealConn := NewConnection(conn, cid, CallbackToClient)
+			dealConn := NewConnection(conn, cid, s.Router)
 			cid++
 			// 启动当前的连接业务处理
 			go dealConn.Start()
@@ -95,12 +96,19 @@ func (s *Server) Serve() {
 	select {}
 }
 
+// 路由功能 给当前服务注册一个路由的方法，供客户端的连接处理使用
+func (s *Server) AddRouter(router ziface.IRouter) {
+	s.Router = router
+	fmt.Println("Add Router succ ")
+}
+
 func NewServer(name string) ziface.IServer {
 	server := &Server{
 		name,
 		"tcp4",
 		"0.0.0.0",
 		8999,
+		nil,
 	}
 	return server
 }
