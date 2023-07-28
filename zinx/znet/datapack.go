@@ -41,6 +41,9 @@ func (dp *DataPack) Pack(msg ziface.IMessage) ([]byte, error) {
 	return dataBuff.Bytes(), nil
 }
 
+//需要注意的是整理的Unpack方法，进行拆包的时候是分两次过程的，第二次是依赖第一次的dataLen结果，所以Unpack只能解压出包头head的内容，得到msgId 和 dataLen。
+//之后调用者再根据dataLen继续从io流中读取body中的数据。
+
 // 拆包方法(解压数据)
 func (dp *DataPack) Unpack(binaryData []byte) (ziface.IMessage, error) {
 	//创建一个从输入二进制数据的ioReader
